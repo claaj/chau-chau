@@ -4,40 +4,26 @@ use std::process::Command;
 const PIXEL_SIZE: i32 = 70;
 const BUTTON_WIDTH: i32 = 128;
 const BUTTON_HEIGHT: i32 = 128;
+const LOGOUT_ICON_NAME: &str = "system-log-out";
+const REBOOT_ICON_NAME: &str = "system-reboot";
+const LOCK_ICON_NAME: &str = "system-lock-screen";
+const SHUTDOWN_ICON_NAME: &str = "system-shutdown";
+const SUSPEND_ICON_NAME: &str = "system-suspend";
+const HIBERNATE_ICON_NAME: &str = "system-hibernate";
 
 struct Action {
-    action_name: String,
-    icon_name: String,
     command: String,
-    hide: bool,
+    button: gtk::Button,
+    label: gtk::Label,
 }
 
 impl Action {
-    fn create_icon(&self) -> gtk::Image {
-        let image = gtk::Image::builder()
-            .icon_name(&self.icon_name)
-            .pixel_size(PIXEL_SIZE)
-            .build();
-        image
-    }
-
-    fn create_button(&self) -> gtk::Button {
-        let button = gtk::Button::builder()
-            .no_show_all(self.hide)
-            .width_request(BUTTON_WIDTH)
-            .height_request(BUTTON_HEIGHT)
-            .image(&self.create_icon())
-            .build();
-        button
-    }
-
-    fn create_label(&self) -> gtk::Label {
-        let label = gtk::Label::builder()
-            .label(&self.action_name)
-            .justify(gtk::Justification::Center)
-            .selectable(false)
-            .build();
-        label
+    fn new(action_name: &str, icon_name: &str, command: &str, hide: bool) -> Action {
+        Action {
+            command: command.to_string(),
+            button: create_button(create_icon(&icon_name), hide),
+            label: create_label(&action_name),
+        }
     }
 }
 
@@ -64,86 +50,70 @@ fn build_ui(application: &gtk::Application) {
         .expand(false)
         .build();
 
-    let logout = Action {
-        action_name: "Logout".to_string(),
-        icon_name: "system-log-out".to_string(),
-        command: "echo logout command".to_string(),
-        hide: false,
-    };
+    let logout = Action::new("Logout", LOGOUT_ICON_NAME, "echo logout", false);
+    let reboot = Action::new("Reboot", REBOOT_ICON_NAME, "echo reboot", false);
+    let lock = Action::new("Lock", LOCK_ICON_NAME, "echo lock", false);
+    let shutdown = Action::new("Shutdown", SHUTDOWN_ICON_NAME, "echo shutdown", false);
+    let suspend = Action::new("Suspend", SUSPEND_ICON_NAME, "echo suspend", false);
+    let hibernate = Action::new("Hibernate", HIBERNATE_ICON_NAME, "echo hibernate", false);
 
-    let reboot = Action {
-        action_name: "Reboot".to_string(),
-        icon_name: "system-reboot".to_string(),
-        command: "echo reboot command".to_string(),
-        hide: false,
-    };
+    grid.attach(&logout.button, 0, 0, 1, 1);
+    grid.attach(&reboot.button, 1, 0, 1, 1);
+    grid.attach(&lock.button, 2, 0, 1, 1);
+    grid.attach(&shutdown.button, 3, 0, 1, 1);
+    grid.attach(&suspend.button, 4, 0, 1, 1);
+    grid.attach(&hibernate.button, 5, 0, 1, 1);
 
-    let lock = Action {
-        action_name: "Lock".to_string(),
-        icon_name: "system-lock-screen".to_string(),
-        command: "echo lock command".to_string(),
-        hide: false,
-    };
+    grid.attach(&logout.label, 0, 1, 1, 1);
+    grid.attach(&reboot.label, 1, 1, 1, 1);
+    grid.attach(&lock.label, 2, 1, 1, 1);
+    grid.attach(&shutdown.label, 3, 1, 1, 1);
+    grid.attach(&suspend.label, 4, 1, 1, 1);
+    grid.attach(&hibernate.label, 5, 1, 1, 1);
 
-    let shutdown = Action {
-        action_name: "Shutdown".to_string(),
-        icon_name: "system-shutdown".to_string(),
-        command: "echo shutdown command".to_string(),
-        hide: false,
-    };
-
-    let suspend = Action {
-        action_name: "Suspend".to_string(),
-        icon_name: "system-suspend".to_string(),
-        command: "echo suspend command".to_string(),
-        hide: false,
-    };
-
-    let hibernate = Action {
-        action_name: "Hibernate".to_string(),
-        icon_name: "system-hibernate".to_string(),
-        command: "echo hibernate command".to_string(),
-        hide: false,
-    };
-
-    let logout_button = logout.create_button();
-    let reboot_button = reboot.create_button();
-    let lock_button = lock.create_button();
-    let shutdown_button = shutdown.create_button();
-    let suspend_button = suspend.create_button();
-    let hibernate_button = hibernate.create_button();
-
-    let logout_label = logout.create_label();
-    let reboot_label = reboot.create_label();
-    let lock_label = lock.create_label();
-    let shutdown_label = shutdown.create_label();
-    let suspend_label = suspend.create_label();
-    let hibernate_label = hibernate.create_label();
-
-    execute_command(&logout_button, logout.command);
-    execute_command(&reboot_button, reboot.command);
-    execute_command(&lock_button, lock.command);
-    execute_command(&shutdown_button, shutdown.command);
-    execute_command(&suspend_button, suspend.command);
-    execute_command(&hibernate_button, hibernate.command);
-
-    grid.attach(&logout_button, 0, 0, 1, 1);
-    grid.attach(&reboot_button, 1, 0, 1, 1);
-    grid.attach(&lock_button, 2, 0, 1, 1);
-    grid.attach(&shutdown_button, 3, 0, 1, 1);
-    grid.attach(&suspend_button, 4, 0, 1, 1);
-    grid.attach(&hibernate_button, 5, 0, 1, 1);
-
-    grid.attach(&logout_label, 0, 1, 1, 1);
-    grid.attach(&reboot_label, 1, 1, 1, 1);
-    grid.attach(&lock_label, 2, 1, 1, 1);
-    grid.attach(&shutdown_label, 3, 1, 1, 1);
-    grid.attach(&suspend_label, 4, 1, 1, 1);
-    grid.attach(&hibernate_label, 5, 1, 1, 1);
+    execute_command(&logout.button, logout.command);
+    execute_command(&reboot.button, reboot.command);
+    execute_command(&lock.button, lock.command);
+    execute_command(&shutdown.button, shutdown.command);
+    execute_command(&suspend.button, suspend.command);
+    execute_command(&hibernate.button, hibernate.command);
 
     window.add(&grid);
 
     window.show_all();
+}
+
+fn main() {
+    let application = gtk::Application::builder()
+        .application_id("com.claaj.powermenu")
+        .build();
+
+    application.connect_activate(build_ui);
+    application.run();
+}
+
+fn create_icon(icon_name: &str) -> gtk::Image {
+    gtk::Image::builder()
+        .icon_name(icon_name)
+        .pixel_size(PIXEL_SIZE)
+        .build()
+}
+
+fn create_button(icon: gtk::Image, hide: bool) -> gtk::Button {
+    gtk::Button::builder()
+        .no_show_all(hide)
+        .width_request(BUTTON_WIDTH)
+        .height_request(BUTTON_HEIGHT)
+        .image(&icon)
+        .build()
+}
+
+fn create_label(action_name: &str) -> gtk::Label {
+    gtk::Label::builder()
+        .label(action_name)
+        .justify(gtk::Justification::Center)
+        .selectable(false)
+        .build()
 }
 
 fn execute_command(button: &gtk::Button, command: String) {
@@ -154,13 +124,4 @@ fn execute_command(button: &gtk::Button, command: String) {
             .spawn()
             .expect("FAILED TO EXECUTE");
     });
-}
-
-fn main() {
-    let application = gtk::Application::builder()
-        .application_id("com.claaj.powermenu")
-        .build();
-
-    application.connect_activate(build_ui);
-    application.run();
 }
