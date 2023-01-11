@@ -18,11 +18,11 @@ struct Action {
 }
 
 impl Action {
-    fn new(action_name: &str, icon_name: &str, command: &str, hide: bool) -> Action {
+    fn new(action_name: &str, icon_name: &str, command: &str, hidden: bool) -> Action {
         Action {
             command: command.to_string(),
-            button: create_button(create_icon(&icon_name), hide),
-            label: create_label(&action_name),
+            button: create_button(create_icon(&icon_name), hidden),
+            label: create_label(&action_name, hidden),
         }
     }
 }
@@ -53,7 +53,7 @@ fn build_ui(application: &gtk::Application) {
     let logout = Action::new("Logout", LOGOUT_ICON_NAME, "echo logout", false);
     let reboot = Action::new("Reboot", REBOOT_ICON_NAME, "echo reboot", false);
     let lock = Action::new("Lock", LOCK_ICON_NAME, "echo lock", false);
-    let shutdown = Action::new("Shutdown", SHUTDOWN_ICON_NAME, "echo shutdown", false);
+    let shutdown = Action::new("Shutdown", SHUTDOWN_ICON_NAME, "shutdown now", false);
     let suspend = Action::new("Suspend", SUSPEND_ICON_NAME, "echo suspend", false);
     let hibernate = Action::new("Hibernate", HIBERNATE_ICON_NAME, "echo hibernate", false);
 
@@ -99,17 +99,18 @@ fn create_icon(icon_name: &str) -> gtk::Image {
         .build()
 }
 
-fn create_button(icon: gtk::Image, hide: bool) -> gtk::Button {
+fn create_button(icon: gtk::Image, hidden: bool) -> gtk::Button {
     gtk::Button::builder()
-        .no_show_all(hide)
+        .no_show_all(hidden)
         .width_request(BUTTON_WIDTH)
         .height_request(BUTTON_HEIGHT)
         .image(&icon)
         .build()
 }
 
-fn create_label(action_name: &str) -> gtk::Label {
+fn create_label(action_name: &str, hidden: bool) -> gtk::Label {
     gtk::Label::builder()
+        .no_show_all(hidden)
         .label(action_name)
         .justify(gtk::Justification::Center)
         .selectable(false)
