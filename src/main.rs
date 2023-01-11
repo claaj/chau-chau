@@ -25,6 +25,16 @@ impl Action {
             label: create_label(&action_name, hidden),
         }
     }
+
+    fn button_click(self) {
+        self.button.connect_clicked(move |_| {
+            Command::new("sh")
+                .arg("-c")
+                .arg(&self.command)
+                .spawn()
+                .expect("FAILED TO EXECUTE");
+        });
+    }
 }
 
 fn build_ui(application: &gtk::Application) {
@@ -40,20 +50,19 @@ fn build_ui(application: &gtk::Application) {
         .build();
 
     let grid = gtk::Grid::builder()
-        .column_homogeneous(true)
         .margin(20)
         .column_spacing(20)
         .row_spacing(20)
         .orientation(gtk::Orientation::Horizontal)
         .valign(gtk::Align::Center)
-        .halign(gtk::Align::Center)
         .expand(false)
+        .halign(gtk::Align::Center)
         .build();
 
     let logout = Action::new("Logout", LOGOUT_ICON_NAME, "echo logout", false);
     let reboot = Action::new("Reboot", REBOOT_ICON_NAME, "echo reboot", false);
     let lock = Action::new("Lock", LOCK_ICON_NAME, "echo lock", false);
-    let shutdown = Action::new("Shutdown", SHUTDOWN_ICON_NAME, "shutdown now", false);
+    let shutdown = Action::new("Shutdown", SHUTDOWN_ICON_NAME, "echo shutdown", false);
     let suspend = Action::new("Suspend", SUSPEND_ICON_NAME, "echo suspend", false);
     let hibernate = Action::new("Hibernate", HIBERNATE_ICON_NAME, "echo hibernate", false);
 
@@ -71,25 +80,16 @@ fn build_ui(application: &gtk::Application) {
     grid.attach(&suspend.label, 4, 1, 1, 1);
     grid.attach(&hibernate.label, 5, 1, 1, 1);
 
-    execute_command(&logout.button, logout.command);
-    execute_command(&reboot.button, reboot.command);
-    execute_command(&lock.button, lock.command);
-    execute_command(&shutdown.button, shutdown.command);
-    execute_command(&suspend.button, suspend.command);
-    execute_command(&hibernate.button, hibernate.command);
+    logout.button_click();
+    reboot.button_click();
+    lock.button_click();
+    shutdown.button_click();
+    suspend.button_click();
+    hibernate.button_click();
 
     window.add(&grid);
 
     window.show_all();
-}
-
-fn main() {
-    let application = gtk::Application::builder()
-        .application_id("com.claaj.powermenu")
-        .build();
-
-    application.connect_activate(build_ui);
-    application.run();
 }
 
 fn create_icon(icon_name: &str) -> gtk::Image {
@@ -117,12 +117,11 @@ fn create_label(action_name: &str, hidden: bool) -> gtk::Label {
         .build()
 }
 
-fn execute_command(button: &gtk::Button, command: String) {
-    button.connect_clicked(move |_| {
-        Command::new("sh")
-            .arg("-c")
-            .arg(&command)
-            .spawn()
-            .expect("FAILED TO EXECUTE");
-    });
+fn main() {
+    let application = gtk::Application::builder()
+        .application_id("com.chauchau.powermenu")
+        .build();
+
+    application.connect_activate(build_ui);
+    application.run();
 }
