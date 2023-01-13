@@ -4,6 +4,7 @@ use std::process::Command;
 const PIXEL_SIZE: i32 = 70;
 const BUTTON_WIDTH: i32 = 128;
 const BUTTON_HEIGHT: i32 = 128;
+const SPACING: i32 = 20;
 
 struct Action {
     command: String,
@@ -64,9 +65,9 @@ fn build_ui(application: &gtk::Application) {
         .build();
 
     let grid = gtk::Grid::builder()
-        .margin(20)
-        .column_spacing(20)
-        .row_spacing(20)
+        .margin(SPACING)
+        .column_spacing(SPACING)
+        .row_spacing(SPACING)
         .orientation(gtk::Orientation::Horizontal)
         .valign(gtk::Align::Center)
         .expand(false)
