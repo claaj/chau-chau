@@ -6,6 +6,15 @@ const BUTTON_WIDTH: i32 = 128;
 const BUTTON_HEIGHT: i32 = 128;
 const SPACING: i32 = 20;
 
+enum ActionType {
+    Logout,
+    Reboot,
+    Lock,
+    Shutdown,
+    Suspend,
+    Hibernate,
+}
+
 struct Action {
     command: String,
     button: gtk::Button,
@@ -13,6 +22,23 @@ struct Action {
 }
 
 impl Action {
+    fn new(action_type: ActionType, action_name: &str, command: &str, hidden: bool) -> Action {
+        let icon_name = match action_type {
+            ActionType::Logout => "system-log-out",
+            ActionType::Reboot => "system-reboot",
+            ActionType::Lock => "system-lock-screen",
+            ActionType::Shutdown => "system-shutdown",
+            ActionType::Suspend => "system-suspend",
+            ActionType::Hibernate => "system-hibernate",
+        };
+
+        Action {
+            command: command.to_string(),
+            button: create_button(create_icon(&icon_name), hidden),
+            label: create_label(&action_name, hidden),
+        }
+    }
+
     fn button_click(self) {
         self.button.connect_clicked(move |_| {
             Command::new("sh")
@@ -24,38 +50,10 @@ impl Action {
     }
 }
 
-enum PowerActions {
-    Logout,
-    Reboot,
-    Lock,
-    Shutdown,
-    Suspend,
-    Hibernate,
-}
-
-impl PowerActions {
-    fn to_action(&self, action_name: &str, command: &str, hidden: bool) -> Action {
-        let icon_name = match self {
-            PowerActions::Logout => "system-log-out",
-            PowerActions::Reboot => "system-reboot",
-            PowerActions::Lock => "system-lock-screen",
-            PowerActions::Shutdown => "system-shutdown",
-            PowerActions::Suspend => "system-suspend",
-            PowerActions::Hibernate => "system-hibernate",
-        };
-
-        Action {
-            command: command.to_string(),
-            button: create_button(create_icon(&icon_name), hidden),
-            label: create_label(&action_name, hidden),
-        }
-    }
-}
-
 fn build_ui(application: &gtk::Application) {
     let window = gtk::ApplicationWindow::builder()
         .application(application)
-        .title("Power Menu")
+        .title("Chau")
         .window_position(gtk::WindowPosition::CenterAlways)
         .expand(false)
         .decorated(false)
@@ -74,12 +72,27 @@ fn build_ui(application: &gtk::Application) {
         .halign(gtk::Align::Center)
         .build();
 
-    let logout = PowerActions::Logout.to_action("Logout", "echo logout", false);
-    let reboot = PowerActions::Reboot.to_action("Reboot", "echo reboot", false);
-    let lock = PowerActions::Lock.to_action("Lock", "echo lock", false);
-    let shutdown = PowerActions::Shutdown.to_action("Shutdown", "echo shutdown", false);
-    let suspend = PowerActions::Suspend.to_action("Suspend", "echo suspend", false);
-    let hibernate = PowerActions::Hibernate.to_action("Hibernate", "echo hibernate", false);
+    let logout = Action::new(
+        ActionType::Logout,
+        "Logout",
+        "loginctl terminate-user $USER",
+        false,
+    );
+    let reboot = Action::new(ActionType::Reboot, "Reboot", "systemctl reboot", false);
+    let lock = Action::new(ActionType::Lock, "Lock", "swaylock", false);
+    let shutdown = Action::new(
+        ActionType::Shutdown,
+        "Shutdown",
+        "systemctl poweroff",
+        false,
+    );
+    let suspend = Action::new(ActionType::Suspend, "Suspend", "systemctl suspend", false);
+    let hibernate = Action::new(
+        ActionType::Hibernate,
+        "Hibernate",
+        "systemctl hibernate",
+        false,
+    );
 
     grid.attach(&logout.button, 0, 0, 1, 1);
     grid.attach(&reboot.button, 1, 0, 1, 1);
@@ -134,9 +147,9 @@ fn create_label(action_name: &str, hidden: bool) -> gtk::Label {
 
 fn main() {
     let application = gtk::Application::builder()
-        .application_id("com.chauchau.powermenu")
+        .application_id("com.claaj.chau")
         .build();
 
-    application.connect_activate(build_ui);
+    application.connect_startup(build_ui);
     application.run();
 }
